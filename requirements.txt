@@ -1,4 +1,5 @@
-torch
-transformers
-numpy
-scipy
+torch>=1.12.1
+transformers>=4.23.1
+Pillow==9.2.0
+tqdm==4.64.1
+ftfy==6.1.1
