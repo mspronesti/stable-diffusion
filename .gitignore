@@ -103,3 +103,6 @@ venv.bak/
 
 # Cython debug symbols
 cython_debug/
+
+# vocabulary file
+*.txt.gz
