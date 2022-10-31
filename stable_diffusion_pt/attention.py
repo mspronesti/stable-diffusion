@@ -7,13 +7,7 @@ import math
 
 
 class SelfAttention(nn.Module):
-    def __init__(
-        self,
-        n_heads: int,
-        d_embed: int,
-        in_proj_bias: bool = True,
-        out_proj_bias: bool = True,
-    ) -> None:
+    def __init__(self, n_heads, d_embed, in_proj_bias=True, out_proj_bias=True):
         super().__init__()
         self.in_proj = nn.Linear(d_embed, 3 * d_embed, bias=in_proj_bias)
         self.out_proj = nn.Linear(d_embed, d_embed, bias=out_proj_bias)
@@ -47,13 +41,8 @@ class SelfAttention(nn.Module):
 
 class CrossAttention(nn.Module):
     def __init__(
-        self,
-        n_heads: int,
-        d_embed: int,
-        d_cross: int,
-        in_proj_bias: bool = True,
-        out_proj_bias: bool = True,
-    ) -> None:
+        self, n_heads, d_embed, d_cross, in_proj_bias=True, out_proj_bias=True
+    ):
         super().__init__()
         self.q_proj = nn.Linear(d_embed, d_embed, bias=in_proj_bias)
         self.k_proj = nn.Linear(d_cross, d_embed, bias=in_proj_bias)

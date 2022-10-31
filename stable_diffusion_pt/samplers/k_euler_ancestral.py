@@ -1,13 +1,13 @@
 import torch
 import numpy as np
-from .. import util
+from .. import utils
 
 
 class KEulerAncestralSampler:
     def __init__(self, n_inference_steps=50, n_training_steps=1000, generator=None):
         timesteps = np.linspace(n_training_steps - 1, 0, n_inference_steps)
 
-        alphas_cumprod = util.get_alphas_cumprod(n_training_steps=n_training_steps)
+        alphas_cumprod = utils.get_alphas_cumprod(n_training_steps=n_training_steps)
         sigmas = ((1 - alphas_cumprod) / alphas_cumprod) ** 0.5
         log_sigmas = np.log(sigmas)
         log_sigmas = np.interp(timesteps, range(n_training_steps), log_sigmas)

@@ -1,6 +1,6 @@
 [flake8]
 # max line length for black
-max-line-length = 100
+max-line-length = 120
 target-version = ['py37']
 ignore=
     E24,   # check ignored by default in flake8. Meaning unclear.
