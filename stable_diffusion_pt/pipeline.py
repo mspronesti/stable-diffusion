@@ -171,7 +171,7 @@ def generate(
         diffusion = models.get("diffusion") or model_loader.load_diffusion(device)
         diffusion.to(device)
 
-        progress_bar = tqdm(list(enumerate(sampler.timesteps))[::-1])
+        progress_bar = tqdm(list(enumerate(sampler.timesteps)))
         for i, timestep in progress_bar:
             progress_bar.set_description("%3d %3d" % (i, timestep))
             time_embedding = utils.get_time_embedding(timestep).to(device)
