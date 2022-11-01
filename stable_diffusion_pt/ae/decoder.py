@@ -1,6 +1,7 @@
 from torch import nn
 from torch.nn import functional as F
 from ..attention import SelfAttention
+from ..base import PreTrainedModel
 
 
 class AttentionBlock(nn.Module):
@@ -54,7 +55,7 @@ class ResidualBlock(nn.Module):
         return x + self.residual_layer(residue)
 
 
-class Decoder(nn.Sequential):
+class Decoder(PreTrainedModel, nn.Sequential):
     def __init__(self):
         super().__init__(
             nn.Conv2d(4, 4, kernel_size=1, padding=0),

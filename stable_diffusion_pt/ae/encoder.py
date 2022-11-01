@@ -1,9 +1,10 @@
 import torch
 from torch import nn
 from .decoder import AttentionBlock, ResidualBlock
+from ..base import PreTrainedModel
 
 
-class Encoder(nn.Sequential):
+class Encoder(PreTrainedModel, nn.Sequential):
     def __init__(self):
         super().__init__(
             nn.Conv2d(3, 128, kernel_size=3, padding=1),

@@ -6,7 +6,20 @@ from PIL import Image
 from .clip_tokenizer import CLIPTokenizer
 from .samplers import KLMSSampler, KEulerSampler, KEulerAncestralSampler
 
-from . import utils, model_loader
+from . import utils
+from . import (
+    CLIP,
+    Decoder,
+    Diffusion,
+    Encoder,
+)
+
+BASE_URL = "https://huggingface.co/mpronesti/stable-diffusion-pytorch/resolve/main/"
+
+CLIP_URL = BASE_URL + "clip.pt"
+DECODER_URL = BASE_URL + "decoder.pt"
+DIFFUSION_URL = BASE_URL + "diffusion.pt"
+ENCODER_URL = BASE_URL + "encoder.pt"
 
 
 def generate(
@@ -20,7 +33,6 @@ def generate(
     width=512,
     sampler="k_lms",
     n_inference_steps=50,
-    models=None,
     seed=None,
     device=None,
     idle_device=None,
@@ -57,8 +69,6 @@ def generate(
         n_inference_steps (`int`, *optional*, defaults to 50):
             The number of denoising steps. More denoising steps usually lead to a higher quality image at the
             expense of slower inference. This parameter will be modulated by `strength`.
-        models (`Dict[str, torch.nn.Module]`, *optional*):
-            Preloaded models. If some or all models are not provided, they will be loaded dynamically.
         seed (`int`, *optional*):
             A seed to make generation deterministic.
         device (`str` or `torch.device`, *optional*):
@@ -112,8 +122,9 @@ def generate(
             generator.manual_seed(seed)
 
         tokenizer = CLIPTokenizer()
-        clip = models.get("clip") or model_loader.load_clip(device)
+        clip = CLIP.from_remote_weights(CLIP_URL)
         clip.to(device)
+
         if do_cfg:
             cond_tokens = tokenizer.encode_batch(prompts)
             cond_tokens = torch.tensor(cond_tokens, dtype=torch.long, device=device)
@@ -141,8 +152,9 @@ def generate(
         noise_shape = (len(prompts), 4, height // 8, width // 8)
 
         if input_images:
-            encoder = models.get("encoder") or model_loader.load_encoder(device)
+            encoder = Encoder.from_remote_weights(ENCODER_URL)
             encoder.to(device)
+
             processed_input_images = []
             for input_image in input_images:
                 input_image = np.array(input_image)
@@ -168,7 +180,7 @@ def generate(
             latents = torch.randn(noise_shape, generator=generator, device=device)
             latents *= sampler.initial_scale
 
-        diffusion = models.get("diffusion") or model_loader.load_diffusion(device)
+        diffusion = Diffusion.from_remote_weights(DIFFUSION_URL)
         diffusion.to(device)
 
         progress_bar = tqdm(list(enumerate(sampler.timesteps)))
@@ -190,8 +202,9 @@ def generate(
         to_idle(diffusion)
         del diffusion
 
-        decoder = models.get("decoder") or model_loader.load_decoder(device)
+        decoder = Decoder.from_remote_weights(DECODER_URL)
         decoder.to(device)
+
         images = decoder(latents)
         to_idle(decoder)
         del decoder

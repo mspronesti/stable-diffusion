@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from .attention import SelfAttention
+from .base import PreTrainedModel
 
 
 class CLIPEmbedding(nn.Module):
@@ -40,7 +41,7 @@ class CLIPLayer(nn.Module):
         return x
 
 
-class CLIP(nn.Module):
+class CLIP(PreTrainedModel, nn.Module):
     def __init__(self):
         super().__init__()
         self.embedding = CLIPEmbedding(49408, 768, 77)

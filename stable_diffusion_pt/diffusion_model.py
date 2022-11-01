@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from .attention import SelfAttention, CrossAttention
+from .base import PreTrainedModel
 
 
 class TimeEmbedding(nn.Module):
@@ -210,7 +211,7 @@ class FinalLayer(nn.Module):
         return x
 
 
-class Diffusion(nn.Module):
+class Diffusion(PreTrainedModel, nn.Module):
     def __init__(self):
         super().__init__()
         self.time_embedding = TimeEmbedding(320)
