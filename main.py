@@ -1,30 +1,9 @@
-from stable_diffusion_pt import model_loader
 from stable_diffusion_pt import pipeline
 
-# import argparse
-
-# parser = argparse.ArgumentParser()
-#
-# parser.add_argument(
-#     "--prompt",
-#     type=str,
-#     nargs="?",
-#     required=True,
-#     help="the prompt to render",
-# )
-#
-# parser.add_argument(
-#     "--steps",
-#     type=int,
-#     default=50,
-#     help="number of ddim sampling steps"
-# )
-
-
-# args = parser.parse_args()
-
-
-prompt = "a photograph of an astronaut riding a horse"  # @param { type: "string" }
+prompt = (
+    "A epic and beautiful rococo werewolf drinking coffee, in a burning coffee shop. ultra-detailed. anime, "
+    "pixiv, uhd 8k cryengine, octane render"
+)  # @param { type: "string" }
 prompts = [prompt]
 
 uncond_prompt = ""  # @param { type: "string" }
@@ -38,8 +17,8 @@ do_cfg = True  # @param { type: "boolean" }
 cfg_scale = 7.5  # @param { type:"slider", min: 1, max: 14, step: 0.5 }
 height = 512  # @param { type: "integer" }
 width = 512  # @param { type: "integer" }
-sampler = "k_lms"  # @param ["k_lms", "k_euler", "k_euler_ancestral"]
-n_inference_steps = 10  # @param { type: "integer" }
+sampler = "k_euler_ancestral"  # @param ["k_lms", "k_euler", "k_euler_ancestral"]
+n_inference_steps = 50  # @param { type: "integer" }
 
 use_seed = False  # @param { type: "boolean" }
 if use_seed:
@@ -48,7 +27,6 @@ else:
     seed = None
 
 if __name__ == "__main__":
-    models = model_loader.preload_models("cpu")
     img = pipeline.generate(
         prompts=prompts,
         uncond_prompts=uncond_prompts,
@@ -61,7 +39,6 @@ if __name__ == "__main__":
         sampler=sampler,
         n_inference_steps=n_inference_steps,
         seed=seed,
-        models=models,
         device="cpu",
         idle_device="cpu",
     )[0]
