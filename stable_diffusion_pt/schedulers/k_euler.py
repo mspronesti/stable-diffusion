@@ -2,7 +2,7 @@ import numpy as np
 from .. import utils
 
 
-class KEulerSampler:
+class KEulerScheduler:
     def __init__(self, n_inference_steps=50, n_training_steps=1000):
         timesteps = np.linspace(n_training_steps - 1, 0, n_inference_steps)
 

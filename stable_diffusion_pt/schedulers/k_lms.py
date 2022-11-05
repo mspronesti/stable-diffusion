@@ -2,7 +2,7 @@ import numpy as np
 from .. import utils
 
 
-class KLMSSampler:
+class KLMSScheduler:
     def __init__(self, n_inference_steps=50, n_training_steps=1000, lms_order=4):
         timesteps = np.linspace(n_training_steps - 1, 0, n_inference_steps)
 
