@@ -8,7 +8,7 @@ from .samplers import KLMSSampler, KEulerSampler, KEulerAncestralSampler
 
 from . import utils
 from . import (
-    CLIP,
+    CLIPTextTransformer,
     Decoder,
     Diffusion,
     Encoder,
@@ -122,7 +122,7 @@ def generate(
             generator.manual_seed(seed)
 
         tokenizer = CLIPTokenizer()
-        clip = CLIP.from_remote_weights(CLIP_URL)
+        clip = CLIPTextTransformer.from_remote_weights(CLIP_URL)
         clip.to(device)
 
         if do_cfg:
@@ -157,6 +157,10 @@ def generate(
 
             processed_input_images = []
             for input_image in input_images:
+                if type(input_image) is str:
+                    input_image = Image.open(input_image)
+
+                input_image = input_image.resize((width, height))
                 input_image = np.array(input_image)
                 input_image = torch.tensor(input_image, dtype=torch.float32)
                 input_image = utils.rescale(input_image, (0, 255), (-1, 1))
