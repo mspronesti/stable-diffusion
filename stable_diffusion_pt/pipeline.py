@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from PIL import Image
 from .clip_tokenizer import CLIPTokenizer
-from .samplers import KLMSSampler, KEulerSampler, KEulerAncestralSampler
+from .schedulers import KLMSScheduler, KEulerScheduler, KEulerAncestralScheduler
 
 from . import utils
 from . import (
@@ -31,7 +31,7 @@ def generate(
     cfg_scale=7.5,
     height=512,
     width=512,
-    sampler="k_lms",
+    scheduler="k_lms",
     n_inference_steps=50,
     seed=None,
     device=None,
@@ -63,8 +63,8 @@ def generate(
             The height in pixels of the generated image. Ignored when `input_images` are provided.
         width (`int`, *optional*, defaults to 512):
             The width in pixels of the generated image. Ignored when `input_images` are provided.
-        sampler (`str`, *optional*, defaults to "k_lms"):
-            A sampler to be used to denoise the encoded image latents. Can be one of `"k_lms"`, `"k_euler"`,
+        scheduler (`str`, *optional*, defaults to "k_lms"):
+            A scheduler to be used to denoise the encoded image latents. Can be one of `"k_lms"`, `"k_euler"`,
             or `"k_euler_ancestral"`.
         n_inference_steps (`int`, *optional*, defaults to 50):
             The number of denoising steps. More denoising steps usually lead to a higher quality image at the
@@ -122,7 +122,7 @@ def generate(
             generator.manual_seed(seed)
 
         tokenizer = CLIPTokenizer()
-        clip = CLIPTextTransformer.from_remote_weights(CLIP_URL)
+        clip = CLIPTextTransformer.from_url(CLIP_URL)
         clip.to(device)
 
         if do_cfg:
@@ -140,19 +140,24 @@ def generate(
         to_idle(clip)
         del tokenizer, clip
 
-        if sampler == "k_lms":
-            sampler = KLMSSampler(n_inference_steps=n_inference_steps)
-        elif sampler == "k_euler":
-            sampler = KEulerSampler(n_inference_steps=n_inference_steps)
-        elif sampler == "k_euler_ancestral":
-            sampler = KEulerAncestralSampler(
+        if scheduler == "k_lms":
+            scheduler = KLMSScheduler(n_inference_steps=n_inference_steps)
+        elif scheduler == "k_euler":
+            scheduler = KEulerScheduler(n_inference_steps=n_inference_steps)
+        elif scheduler == "k_euler_ancestral":
+            scheduler = KEulerAncestralScheduler(
                 n_inference_steps=n_inference_steps, generator=generator
+            )
+        else:
+            raise ValueError(
+                "Unknown scheduler %s."
+                "Accepted values are {k_lms, k_euler, k_euler_ancestral}." % scheduler
             )
 
         noise_shape = (len(prompts), 4, height // 8, width // 8)
 
         if input_images:
-            encoder = Encoder.from_remote_weights(ENCODER_URL)
+            encoder = Encoder.from_url(ENCODER_URL)
             encoder.to(device)
 
             processed_input_images = []
@@ -175,24 +180,24 @@ def generate(
             latents = encoder(input_images_tensor, encoder_noise)
 
             latents_noise = torch.randn(noise_shape, generator=generator, device=device)
-            sampler.set_strength(strength=strength)
-            latents += latents_noise * sampler.initial_scale
+            scheduler.set_strength(strength=strength)
+            latents += latents_noise * scheduler.initial_scale
 
             to_idle(encoder)
             del encoder, processed_input_images, input_images_tensor, latents_noise
         else:
             latents = torch.randn(noise_shape, generator=generator, device=device)
-            latents *= sampler.initial_scale
+            latents *= scheduler.initial_scale
 
-        diffusion = Diffusion.from_remote_weights(DIFFUSION_URL)
+        diffusion = Diffusion.from_url(DIFFUSION_URL)
         diffusion.to(device)
 
-        progress_bar = tqdm(list(enumerate(sampler.timesteps)))
+        progress_bar = tqdm(list(enumerate(scheduler.timesteps)))
         for i, timestep in progress_bar:
             progress_bar.set_description("%3d %3d" % (i, timestep))
             time_embedding = utils.get_time_embedding(timestep).to(device)
 
-            input_latents = latents * sampler.get_input_scale()
+            input_latents = latents * scheduler.get_input_scale()
             if do_cfg:
                 input_latents = input_latents.repeat(2, 1, 1, 1)
 
@@ -201,12 +206,12 @@ def generate(
                 output_cond, output_uncond = output.chunk(2)
                 output = cfg_scale * (output_cond - output_uncond) + output_uncond
 
-            latents = sampler.step(latents, output)
+            latents = scheduler.step(latents, output)
 
         to_idle(diffusion)
         del diffusion
 
-        decoder = Decoder.from_remote_weights(DECODER_URL)
+        decoder = Decoder.from_url(DECODER_URL)
         decoder.to(device)
 
         images = decoder(latents)

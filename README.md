@@ -1,33 +1,15 @@
-# Stable Diffusion in PyTorch [NO Token Required]
+# Stable Diffusion in PyTorch
+### No Hugginface Token Required
 
 Implementation of Stable Diffusion in PyTorch, for personal interest and learning purpose.
 
-The weights were ported from the original implementation and made pytorch-compatible. No huggingface token is required for this
-implementation and no manual download. Everything has been automated.
-
-## Installation
-Create a virtual environment:
-
-```shell
-python3 -m venv .venv
-```
-
-and activate it
-
-```shell
-source .venv/bin/activate
-```
-
-now install the requirements
-
-```shell
-pip install -r requirements.txt
-```
-
-(TODO: continue)
+Weights are stored on a huggingface hub repository and automatically downloaded and cached at runtime.
 
 ## Usage
-(TODO: explain)
+
+The easiest way to give it a shot is using one of the following Colab Notebooks:
+- [GPU Text2Image](https://colab.research.google.com/github/mspronesti/stable-diffusion-pytorch/blob/master/notebooks/Text2Img.ipynb)
+- [GPU Img2Img](https://colab.research.google.com/github/mspronesti/stable-diffusion-pytorch/blob/master/notebooks/Img2Img.ipynb)
 
 ## Example output
 
@@ -55,6 +37,5 @@ The implementation is based on this [repository](https://github.com/kjsman/stabl
 ### Difference with the original implementation
 - the `ClipTokenizer` has been rewritten to exploit LRU Caching
 - the weights and vocabulary download process has entirely automated so that no manual action is required from the user
-- the code was slightly cleaned and given more structure
 - add a progress bar to track the generation process and provided a generation script
-- provided a containerized version (TODO)
+- the code has been
